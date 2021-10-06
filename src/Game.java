@@ -5,6 +5,9 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
 import javax.swing.JFrame;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.GraphicsConfiguration;
 
 public class Game extends JFrame implements Runnable{
 	
@@ -18,6 +21,12 @@ public class Game extends JFrame implements Runnable{
 	public ArrayList<Texture> textures;
 	public Camera camera;
 	public Screen screen;
+	public static GraphicsEnvironment graphics = GraphicsEnvironment.getLocalGraphicsEnvironment();
+	public static GraphicsDevice device = graphics.getDefaultScreenDevice();
+	public static GraphicsConfiguration config = device.getDefaultConfiguration();
+	public static int width = 640;
+	public static int height = 480;
+	public static boolean windowedMode = false;
 	public static int[][] map = 
 		{
 			{1,1,1,1,1,1,1,1,2,2,2,2,2,2,2},
@@ -36,9 +45,14 @@ public class Game extends JFrame implements Runnable{
 			{1,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
 			{1,1,1,1,1,1,1,4,4,4,4,4,4,4,4}
 		};
+
 	public Game() {
+		if (!windowedMode) {
+			width = (int) config.getBounds().getWidth();
+			height = (int) config.getBounds().getHeight();
+		}
 		thread = new Thread(this);
-		image = new BufferedImage(640, 480, BufferedImage.TYPE_INT_RGB);
+		image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
 		textures = new ArrayList<Texture>();
 		textures.add(Texture.wood);
@@ -46,14 +60,18 @@ public class Game extends JFrame implements Runnable{
 		textures.add(Texture.bluestone);
 		textures.add(Texture.stone);
 		camera = new Camera(4.5, 4.5, 1, 0, 0, -.66);
-		screen = new Screen(map, mapWidth, mapHeight, textures, 640, 480);
+		screen = new Screen(map, mapWidth, mapHeight, textures, width, height);
 		addKeyListener(camera);
-		setSize(640, 480);
+		setSize(width, height);
 		setResizable(false);
 		setTitle("3D Engine");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBackground(Color.black);
 		setLocationRelativeTo(null);
+		if (!windowedMode) {
+			setExtendedState(JFrame.MAXIMIZED_BOTH); 
+			setUndecorated(true);
+		}
 		setVisible(true);
 		start();
 	}
@@ -99,6 +117,11 @@ public class Game extends JFrame implements Runnable{
 		}
 	}
 	public static void main(String [] args) {
+		if (args.length > 0 && args[0].equals("--windowed-mode")) {
+			windowedMode = true;
+		} else {
+			windowedMode = false;
+		}
 		Game game = new Game();
 	}
 }
