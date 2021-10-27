@@ -13,5 +13,5 @@ if not exist "src\" (
 	javac -d . @sources.txt
 	popd
 	echo [Done]
-	call run
+	call run %*
 )
